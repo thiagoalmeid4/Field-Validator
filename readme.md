@@ -15,6 +15,7 @@ Valida se o valor de um atributo representa um estado brasileiro válido.
     String code() default "Brazilian State Annotation"; #Código de identificação da anotação.
     boolean stateRegistration() default false; #Define se o campo está relacionado à inscrição estadual 
 ```
+---
 ```bash
 @CEP
 ```
