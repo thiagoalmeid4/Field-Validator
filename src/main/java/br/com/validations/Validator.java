@@ -11,6 +11,7 @@ import br.com.validations.annotation.Cpf;
 import br.com.validations.annotation.Email;
 import br.com.validations.annotation.NotNull;
 import br.com.validations.annotation.Phone;
+import br.com.validations.annotation.Size;
 import br.com.validations.annotation.StateRegistration;
 import br.com.validations.enums.BrazilianStates;
 import br.com.validations.exception.ValidationException;
@@ -44,6 +45,8 @@ public class Validator {
                     validateStateRegistration(fields, field, object);
                 } else if (field.isAnnotationPresent(Phone.class)) {
                     validatePhone(field, object);
+                } else if (field.isAnnotationPresent(Size.class)) {
+                    validateSize(field, object);
                 }
                 if (field.isAnnotationPresent(NotNull.class)) {
                     validateNotNull(field, object);
@@ -55,6 +58,16 @@ public class Validator {
         }
         if (errors.size() > 0) {
             throw new ValidationException(errors);
+        }
+    }
+
+    private static void validateSize(Field field, Object object) throws IllegalArgumentException, IllegalAccessException{
+        Size size = field.getAnnotation(Size.class);
+        String value = (String) field.get(object);
+        if (value != null && !value.isBlank()) {
+            if (value.length() < size.min() || value.length() > size.max()) {
+                errors.add(new Error(size.code(), size.message()));
+            }
         }
     }
 
