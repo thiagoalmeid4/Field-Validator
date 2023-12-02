@@ -13,6 +13,7 @@ import br.com.validations.annotation.NotNull;
 import br.com.validations.annotation.Phone;
 import br.com.validations.annotation.Size;
 import br.com.validations.annotation.StateRegistration;
+import br.com.validations.annotation.TargetValidation;
 import br.com.validations.enums.BrazilianStates;
 import br.com.validations.exception.ValidationException;
 
@@ -31,6 +32,9 @@ public class Validator {
         for (Field field : fields) {
             field.setAccessible(true);
             try {
+                if(field.isAnnotationPresent(TargetValidation.class)) {
+                    target(object);
+                }
                 if (field.isAnnotationPresent(BrazilianState.class)) {
                     validateBrazilianState(field, object);
                 } else if (field.isAnnotationPresent((Cpf.class))) {
