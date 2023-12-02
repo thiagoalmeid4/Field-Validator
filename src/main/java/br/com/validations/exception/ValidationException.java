@@ -5,7 +5,7 @@ import java.util.List;
 
 import br.com.validations.Error;
 
-public class ValidationException extends RuntimeException {
+public class ValidationException extends Exception {
     
     private List<Error> validationMessages = new ArrayList<>();
 

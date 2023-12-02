@@ -24,7 +24,7 @@ public class Validator {
         return errors;
     }
 
-    public static void target(Object object) {
+    public static void target(Object object) throws ValidationException {
 
         Class<?> clazz = object.getClass();
         Field[] fields = clazz.getDeclaredFields();
