@@ -1,5 +1,6 @@
 package br.com.validations;
 
+import java.lang.System.Logger.Level;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
@@ -32,7 +33,7 @@ public class Validator {
         for (Field field : fields) {
             field.setAccessible(true);
             try {
-                if(field.isAnnotationPresent(TargetValidation.class)) {
+                if (field.isAnnotationPresent(TargetValidation.class)) {
                     target(object);
                 }
                 if (field.isAnnotationPresent(BrazilianState.class)) {
@@ -65,12 +66,14 @@ public class Validator {
         }
     }
 
-    private static void validateSize(Field field, Object object) throws IllegalArgumentException, IllegalAccessException{
+    private static void validateSize(Field field, Object object)
+            throws IllegalArgumentException, IllegalAccessException {
         Size size = field.getAnnotation(Size.class);
         String value = (String) field.get(object);
         if (value != null && !value.isBlank()) {
             if (value.length() < size.min() || value.length() > size.max()) {
                 errors.add(new Error(size.code(), size.message()));
+                System.getLogger(Validator.class.getName()).log(Level.WARNING, value + " is not a valid size");
             }
         }
     }
@@ -83,6 +86,7 @@ public class Validator {
             if (!value.matches(
                     "^\\(?(\\d{2})\\)? ?(?:9\\d{4}-\\d{4}|9\\d{8}|\\d{4}-\\d{4}|\\d{8}|9\\d{4}\\d{4}|\\d{9}|9\\d{8}|\\d{8})$")) {
                 errors.add(new Error(phoneAnnotation.code(), phoneAnnotation.message()));
+                System.getLogger(Validator.class.getName()).log(Level.WARNING, value + " is not a valid phone number");
             }
         }
     }
@@ -124,6 +128,7 @@ public class Validator {
         }
         if (!result) {
             errors.add(new Error(cpfAnnotation.code(), cpfAnnotation.message()));
+            System.getLogger(Validator.class.getName()).log(Level.WARNING, cpf + " is not a valid Cpf");
         }
     }
 
@@ -134,6 +139,7 @@ public class Validator {
         if (email != null && !email.isBlank()) {
             if (!email.matches("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$")) {
                 errors.add(new Error(emailAnnotation.code(), emailAnnotation.message()));
+                System.getLogger(Validator.class.getName()).log(Level.WARNING, email + " is not a valid email");
             }
         }
     }
@@ -145,6 +151,7 @@ public class Validator {
         if (cep != null && !cep.isBlank()) {
             if (!cep.matches("^\\d{5}-\\d{3}$")) {
                 errors.add(new Error(cepAnnotation.code(), cepAnnotation.message()));
+                System.getLogger(Validator.class.getName()).log(Level.WARNING, cep + " is not a valid CEP");
             }
         }
     }
@@ -154,7 +161,8 @@ public class Validator {
         NotNull notNull = field.getAnnotation(NotNull.class);
         String value = (String) field.get(object);
         if (value == null || value.isBlank()) {
-            errors.add(new Error(notNull.code(), notNull.message() + " (" + field.getName() + ")"));
+            errors.add(new Error(notNull.code(), notNull.message()));
+            System.getLogger(Validator.class.getName()).log(Level.WARNING, field.getName() + " cannot be null");
         }
     }
 
@@ -197,6 +205,7 @@ public class Validator {
         }
         if (!result) {
             errors.add(new Error(cnpjAnnotation.code(), cnpjAnnotation.message()));
+            System.getLogger(Validator.class.getName()).log(Level.WARNING, cnpj + " is not a valid CNPJ");
         }
     }
 
@@ -207,6 +216,7 @@ public class Validator {
         if (state != null && !state.isBlank()) {
             if (BrazilianStates.getByName(state) == null) {
                 errors.add(new Error(stateAnnotation.code(), stateAnnotation.message()));
+                System.getLogger(Validator.class.getName()).log(Level.WARNING, state + " is not a valid state");
             }
         }
     }
@@ -216,21 +226,27 @@ public class Validator {
         StateRegistration stateRegistration = field.getAnnotation(StateRegistration.class);
         String value = (String) field.get(object);
         if (value != null && !value.isBlank()) {
-            for(Field f : fields) {
-                if(f.isAnnotationPresent(BrazilianState.class) && 
-                    f.getAnnotation(BrazilianState.class).stateRegistration()) {
+            for (Field f : fields) {
+                if (f.isAnnotationPresent(BrazilianState.class) &&
+                        f.getAnnotation(BrazilianState.class).stateRegistration()) {
                     String state = (String) f.get(object);
-                    if(state != null && !state.isBlank()) {
-                        if(BrazilianStates.getByName(state) == null) {
+                    if (state != null && !state.isBlank()) {
+                        if (BrazilianStates.getByName(state) == null) {
                             errors.add(new Error(stateRegistration.code(), stateRegistration.message()));
-                        }else if(!validaInscricaoEstadual(value, BrazilianStates.getByName(state))){
+                            System.getLogger(Validator.class.getName()).log(Level.WARNING,
+                                    state + " is not a valid state");
+                        } else if (!validaInscricaoEstadual(value, BrazilianStates.getByName(state))) {
                             errors.add(new Error(stateRegistration.code(), stateRegistration.message()));
+                            System.getLogger(Validator.class.getName()).log(Level.WARNING,
+                                    value + " is not a valid state registration");
                         }
                     }
-                }else if(f.isAnnotationPresent(BrazilianState.class) && 
-                    !f.getAnnotation(BrazilianState.class).stateRegistration()){
-                    if(!validaInscricaoEstadual(value, stateRegistration.uf())){
+                } else if (f.isAnnotationPresent(BrazilianState.class) &&
+                        !f.getAnnotation(BrazilianState.class).stateRegistration()) {
+                    if (!validaInscricaoEstadual(value, stateRegistration.uf())) {
                         errors.add(new Error(stateRegistration.code(), stateRegistration.message()));
+                        System.getLogger(Validator.class.getName()).log(Level.WARNING,
+                                value + " is not a valid state registration");
                     }
                 }
             }
